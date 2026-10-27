@@ -3,5 +3,5 @@ WORKDIR /app
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 COPY app/app.py .
 USER appuser
-EXPOSE 80
+EXPOSE 8080
 CMD ["python", "app.py"]
