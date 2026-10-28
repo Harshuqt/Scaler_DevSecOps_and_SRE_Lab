@@ -1,0 +1,62 @@
+name: Pr Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Flake8
+        run: pip install flake8
+
+      - name: Run Flake8
+        run: flake8 app/
+
+      - name: Install pytest
+        run: pip install pytest
+
+      - name: Run unit test
+        run: pytest test/
+
+      - name: Install Bandit
+        run: pip install bandit
+
+      - name: Run Security Testing
+        run: bandit -r app/ -f json -o bandit-report.json
+
+      - name: Secret Scanning
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: docker build -t scaler .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: scaler
+          format: json
+          output: trivy-report.json
+          exit-code: '0'
+          severity: CRITICAL,HIGH
+
+      - name: Check vulnerabilities
+        run: bash script/check_vulnerabilities.sh
