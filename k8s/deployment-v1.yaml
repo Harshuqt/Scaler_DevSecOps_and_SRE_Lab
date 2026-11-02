@@ -21,7 +21,7 @@ spec:
         runAsNonRoot: true
       containers:
         - name: scaler-app
-          image: ghcr.io/harshuqt/scaler:v1
+          image: ghcr.io/harshuqt/scaler:v1-78381fae27abc2fe4962a8b09cb56e5507090ba0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
