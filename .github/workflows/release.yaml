@@ -1,0 +1,82 @@
+name: Release Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'k8s/**'
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-and-push:
+    name: Build & Push Images
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: [v1, v2, v3]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract repository owner in lowercase
+        id: repo_owner
+        run: echo "owner=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          build-args: |
+            APP_VERSION=${{ matrix.version }}
+          tags: |
+            ghcr.io/${{ steps.repo_owner.outputs.owner }}/scaler:${{ matrix.version }}
+            ghcr.io/${{ steps.repo_owner.outputs.owner }}/scaler:${{ matrix.version }}-${{ github.sha }}
+
+  update-manifests:
+    name: Update K8s Manifests
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract repository owner in lowercase
+        id: repo_owner
+        run: echo "owner=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Update Image Tags in Manifests
+        run: |
+          OWNER="${{ steps.repo_owner.outputs.owner }}"
+          SHA="${{ github.sha }}"
+          for v in v1 v2 v3; do
+            sed -i "s|image: ghcr.io/.*/scaler:.*|image: ghcr.io/${OWNER}/scaler:${v}-${SHA}|g" k8s/deployment-${v}.yaml
+          done
+
+      - name: Commit and Push Updated Manifests
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add k8s/
+          if git diff --staged --quiet; then
+            echo "No manifest changes to commit."
+          else
+            git commit -m "chore(release): update k8s manifests with release images [skip ci]"
+            git push origin main
+          fi
