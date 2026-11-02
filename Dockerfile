@@ -1,4 +1,6 @@
 FROM python:3.13-alpine
+ARG APP_VERSION=v1
+ENV APP_VERSION=${APP_VERSION}
 WORKDIR /app
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
     && rm -rf /usr/local/lib/python3.13/site-packages/*

@@ -1,7 +1,9 @@
-import time
+import json
 import logging
+import os
 import sys
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # Configure logging to output to stdout
@@ -19,7 +21,9 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            self.wfile.write(b'{"status": "healthy"}')
+            version = os.getenv("APP_VERSION", "v1")
+            response = json.dumps({"status": "healthy", "version": version})
+            self.wfile.write(response.encode('utf-8'))
         else:
             self.send_response(404)
             self.end_headers()
