@@ -21,6 +21,7 @@ spec:
       serviceAccountName: scaler-sa
       securityContext:
         runAsNonRoot: true
+        runAsUser: 1000
       initContainers:
         - name: preflight-check
           image: busybox:1.37
