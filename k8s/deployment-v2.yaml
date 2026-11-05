@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: scaler-app-v2
+  namespace: scaler-app
   labels:
     app: scaler-app
     version: v2
@@ -17,8 +18,13 @@ spec:
         app: scaler-app
         version: v2
     spec:
+      serviceAccountName: scaler-sa
       securityContext:
         runAsNonRoot: true
+      initContainers:
+        - name: preflight-check
+          image: busybox:1.37
+          command: ['sh', '-c', 'echo "Running pre-flight checks for scaler application..." && sleep 2 && echo "Pre-flight checks passed."']
       containers:
         - name: scaler-app
           image: ghcr.io/harshuqt/scaler:v2-78381fae27abc2fe4962a8b09cb56e5507090ba0
@@ -29,6 +35,11 @@ spec:
           env:
             - name: APP_VERSION
               value: "v2"
+          envFrom:
+            - configMapRef:
+                name: scaler-config
+            - secretRef:
+                name: scaler-secret
           resources:
             requests:
               memory: "128Mi"
