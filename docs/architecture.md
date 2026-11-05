@@ -34,7 +34,7 @@ flowchart TD
 
     subgraph GitOps_Engine ["4. Argo CD GitOps Engine"]
         GitOpsSync --> ArgoCD["Argo CD Application Controller"]
-        ArgoCD -->|Reconcile State & Self-Heal (3s)| K8sCluster["Kubernetes Cluster (K3s)"]
+        ArgoCD -->|"Reconcile State & Self-Heal (3s)"| K8sCluster["Kubernetes Cluster (K3s)"]
     end
 
     subgraph Kubernetes_Runtime ["5. Kubernetes Enterprise Footprint (scaler-app)"]
@@ -49,9 +49,9 @@ flowchart TD
         Svc --> Dep2["Deployment v2 (Pod)"]
         Svc --> Dep3["Deployment v3 (Pod)"]
 
-        Dep1 -.->|400Mi Limit Hit| OOM1["OOMKilled (Exit 137)"]
-        Dep2 -.->|400Mi Limit Hit| OOM2["OOMKilled (Exit 137)"]
-        Dep3 -.->|400Mi Limit Hit| OOM3["OOMKilled (Exit 137)"]
+        Dep1 -.->|"400Mi Limit Hit"| OOM1["OOMKilled (Exit 137)"]
+        Dep2 -.->|"400Mi Limit Hit"| OOM2["OOMKilled (Exit 137)"]
+        Dep3 -.->|"400Mi Limit Hit"| OOM3["OOMKilled (Exit 137)"]
     end
 
     subgraph Observability_Stack ["6. Full Observability & Alerting Stack (monitoring)"]
