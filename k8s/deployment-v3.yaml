@@ -25,6 +25,9 @@ spec:
         - name: preflight-check
           image: busybox:1.37
           command: ['sh', '-c', 'echo "Running pre-flight checks for scaler application..." && sleep 2 && echo "Pre-flight checks passed."']
+          securityContext:
+            runAsUser: 1000
+            runAsNonRoot: true
           resources:
             requests:
               cpu: "10m"
