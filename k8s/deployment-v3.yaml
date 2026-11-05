@@ -25,6 +25,13 @@ spec:
         - name: preflight-check
           image: busybox:1.37
           command: ['sh', '-c', 'echo "Running pre-flight checks for scaler application..." && sleep 2 && echo "Pre-flight checks passed."']
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"
+            limits:
+              cpu: "50m"
+              memory: "32Mi"
       containers:
         - name: scaler-app
           image: ghcr.io/harshuqt/scaler:v3-78381fae27abc2fe4962a8b09cb56e5507090ba0
