@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scaler-sre-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  scaler-sre-overview.json: |-
+    {
+      "id": null,
+      "uid": "scaler-sre-overview",
+      "title": "Scaler SRE Assessment - Cluster & App Health",
+      "tags": ["scaler", "sre"],
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "10s",
+      "panels": [
+        {
+          "id": 1,
+          "gridPos": {"h": 6, "w": 8, "x": 0, "y": 0},
+          "type": "timeseries",
+          "title": "App Pod Restarts (OOMKilled Counter)",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "expr": "sum by (pod) (kube_pod_container_status_restarts_total{namespace=\"scaler-app\"})",
+              "legendFormat": "{{pod}} restarts"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "gridPos": {"h": 6, "w": 8, "x": 8, "y": 0},
+          "type": "stat",
+          "title": "OOMKilled Termination Detected",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "expr": "sum(kube_pod_container_status_last_terminated_reason{namespace=\"scaler-app\", reason=\"OOMKilled\"})",
+              "legendFormat": "OOMKilled Pods"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": 3,
+          "gridPos": {"h": 6, "w": 8, "x": 16, "y": 0},
+          "type": "gauge",
+          "title": "Cluster Memory Usage %",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+              "legendFormat": "Memory %"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "min": 0,
+              "max": 100,
+              "unit": "percent",
+              "color": {"mode": "thresholds"},
+              "thresholds": {
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 70},
+                  {"color": "red", "value": 85}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": 4,
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
+          "type": "timeseries",
+          "title": "App Probe Health (1 = Ready, 0 = Crash/OOM)",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "expr": "kube_pod_status_ready{namespace=\"scaler-app\", condition=\"true\"}",
+              "legendFormat": "{{pod}} Ready"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
+          "type": "timeseries",
+          "title": "Node CPU Usage",
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100)",
+              "legendFormat": "CPU %"
+            }
+          ]
+        }
+      ]
+    }

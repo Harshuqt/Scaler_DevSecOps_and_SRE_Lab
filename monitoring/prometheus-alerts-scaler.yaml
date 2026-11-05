@@ -1,0 +1,32 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: scaler-app-alerts
+  namespace: monitoring
+  labels:
+    app: kube-prometheus-stack
+    release: prometheus
+spec:
+  groups:
+    - name: scaler-app.rules
+      rules:
+        # Alert 1: Pod Unhealthy / Readiness Probe Failure
+        - alert: ScalerAppPodUnhealthy
+          expr: kube_pod_status_ready{namespace="scaler-app", condition="true"} == 0
+          for: 30s
+          labels:
+            severity: critical
+            team: sre
+          annotations:
+            summary: "Scaler App pod is not ready"
+            description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has failed its readiness probe or is unready for more than 30 seconds."
+
+        # Alert 2: OOMKilled Event Detection
+        - alert: ScalerAppContainerOOMKilled
+          expr: kube_pod_container_status_last_terminated_reason{namespace="scaler-app", reason="OOMKilled"} == 1
+          labels:
+            severity: critical
+            team: sre
+          annotations:
+            summary: "Scaler App container terminated with OOMKilled"
+            description: "Container {{ $labels.container }} in pod {{ $labels.pod }} was killed due to Out Of Memory (OOMKilled, exit code 137) after exceeding its 400Mi memory limit."

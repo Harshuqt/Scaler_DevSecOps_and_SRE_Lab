@@ -1,0 +1,57 @@
+# Lightweight configuration for local development on Rancher Desktop K3s
+
+# Disable components that K3s manages internally to save memory
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+
+# Prometheus Configuration
+prometheus:
+  prometheusSpec:
+    retention: 6h
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 600Mi
+    # Scrape interval for faster alert detection during testing
+    scrapeInterval: 15s
+
+# Grafana Configuration
+grafana:
+  adminPassword: "prom-operator"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1024Mi
+  service:
+    type: ClusterIP
+    port: 80
+
+# Node Exporter (Gathers Node CPU, Memory, Disk usage)
+nodeExporter:
+  enabled: true
+
+# Kube-State-Metrics (Gathers Pod status, container restarts, OOMKilled events!)
+kube-state-metrics:
+  enabled: true
+
+# Alertmanager Configuration
+alertmanager:
+  alertmanagerSpec:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 25m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
