@@ -6,6 +6,12 @@ on:
       - main
     paths-ignore:
       - 'k8s/**'
+      - 'docs/**'
+      - 'monitoring/**'
+      - 'argocd/**'
+      - 'README.md'
+      - 'readme.md'
+      - '.gitignore'
 
 permissions:
   contents: write
