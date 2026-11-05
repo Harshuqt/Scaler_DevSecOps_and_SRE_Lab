@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: scaler-app
+  labels:
+    name: scaler-app
+    environment: production
