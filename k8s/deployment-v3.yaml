@@ -38,7 +38,7 @@ spec:
               memory: "32Mi"
       containers:
         - name: scaler-app
-          image: ghcr.io/harshuqt/scaler:v3-78381fae27abc2fe4962a8b09cb56e5507090ba0
+          image: ghcr.io/harshuqt/scaler:v3-f92e86c30e13f29648e1f2b7be7dd6f96eede266
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
